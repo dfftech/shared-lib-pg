@@ -1,0 +1,13 @@
+{
+  "name": "shared-bun-elysia-example",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Example multi-tenant service for shared-bun-elysia (health + address modules, Kafka logs). It uses the library source (../src) through tsconfig paths and the packages of the library root, so there is one copy of elysia, drizzle-orm and pg. Bun loads example/.env by itself.",
+  "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "start": "bun src/main.ts",
+    "logs": "bun src/log-tail.ts",
+    "typecheck": "bun x --bun tsc -p tsconfig.json"
+  }
+}

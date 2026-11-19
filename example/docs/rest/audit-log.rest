@@ -1,0 +1,27 @@
+# Environment
+@hosturl = http://localhost:4000
+@authToken =
+@xTenantId = acme
+
+### 1. Audit trail of one address (newest first)
+POST {{hosturl}}/audit-log-search
+Authorization: Bearer {{authToken}}
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{
+  "entity": "address",
+  "entityId": "64f50ed5-c754-4bbb-980a-adf93a6d868e",
+  "limit": 20
+}
+
+### 2. Every UPDATE of the tenant
+POST {{hosturl}}/audit-log-search
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{ "action": "UPDATE" }
+
+### 3. One audit entry (id from the search)
+GET {{hosturl}}/audit-log-entity/REPLACE_WITH_ID
+x-tenant-id: {{xTenantId}}

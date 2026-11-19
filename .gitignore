@@ -1,0 +1,126 @@
+# ---- Dependencies ----
+node_modules/
+.pnp
+.pnp.*
+.yarn/
+jspm_packages/
+
+# ---- Lock files (not committed; each machine installs fresh) ----
+bun.lock
+bun.lockb
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+
+# ---- Bun ----
+.bun/
+bun-debug.log*
+
+# ---- Build output ----
+dist/
+build/
+build-test/
+example/dist/
+*.tsbuildinfo
+
+# ---- Packages and archives ----
+*.tgz
+*.zip
+
+# ---- Tests and coverage ----
+coverage/
+.nyc_output/
+*.lcov
+
+# ---- Caches ----
+.cache/
+.npm/
+.turbo/
+.eslintcache
+.temp/
+tmp/
+
+# ---- Environment / secrets (keep .env.example) ----
+.env
+.env.*
+!.env.example
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- IDEs and editors ----
+# VS Code / Cursor
+.vscode/
+.cursor/
+*.code-workspace
+.history/
+# JetBrains (WebStorm, IntelliJ, ...)
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+# Zed / Fleet
+.zed/
+.fleet/
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+# Eclipse / NetBeans / Visual Studio
+.project
+.classpath
+.settings/
+nbproject/
+.vs/
+# Claude Code local settings (shared .claude/ files stay)
+.claude/settings.local.json
+
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ---- Windows ----
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.stackdump
+*.lnk
+
+# ---- Linux ----
+.directory
+.Trash-*
+.nfs*
+.fuse_hidden*
+
+# ---- Local sync folder used while developing with Claude ----
+.sync/

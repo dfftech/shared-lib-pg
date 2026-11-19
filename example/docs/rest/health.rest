@@ -1,0 +1,11 @@
+# Environment
+@hosturl = http://localhost:4000
+
+### 1. Service health (no database)
+GET {{hosturl}}/health
+
+### 2. Tenant health (:id is the tenant; pings its database)
+GET {{hosturl}}/health/acme
+
+### 3. Base database ("core" tenant)
+GET {{hosturl}}/health/core

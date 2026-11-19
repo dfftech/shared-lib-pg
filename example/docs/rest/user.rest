@@ -1,0 +1,50 @@
+# Environment
+@hosturl = http://localhost:4000
+@authToken =
+@xTenantId = acme
+
+### 1. User Save (create; e-mail is stored in lower case and is unique per tenant)
+POST {{hosturl}}/user-save
+Authorization: Bearer {{authToken}}
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{
+  "id": "u-1",
+  "name": "Ann Lee",
+  "email": "Ann@Example.com",
+  "mobile": "+1 416 555 0100",
+  "persona": "admin"
+}
+
+### 2. User Save (update)
+POST {{hosturl}}/user-save
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{ "id": "u-1", "name": "Ann Lee-Smith", "email": "ann@example.com", "persona": "admin", "active": false }
+
+### 3. Same e-mail, other id -> { data: null, error: "USER_EMAIL_EXISTS" }
+POST {{hosturl}}/user-save
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{ "id": "u-2", "name": "Ann Two", "email": "ann@example.com" }
+
+### 4. User Search
+POST {{hosturl}}/user-search
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{ "searchTerm": "lee", "persona": "admin", "active": false, "limit": 10, "skip": 0 }
+
+### 5. User Entity
+GET {{hosturl}}/user-entity/u-1
+x-tenant-id: {{xTenantId}}
+
+### 6. Audit trail of the user
+POST {{hosturl}}/audit-log-search
+x-tenant-id: {{xTenantId}}
+Content-Type: application/json
+
+{ "entity": "user", "entityId": "u-1" }
