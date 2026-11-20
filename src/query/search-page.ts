@@ -7,9 +7,10 @@
 //   -> { data, total, skip, limit }
 // limit defaults to 10 and is at most 500. orderBy must be a column of the table (else updated_at / created_at / id).
 
-import { toViewMapper, type SearchType } from "dff-util";
+import { toViewMapper } from "dff-util";
 import { and, asc, count, desc, eq, ilike, or, type InferSelectModel, type SQL } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
+import type { SearchType } from "../app-types.ts";
 import type { AppDatabase, AppTransactionDb } from "../db/db-types.ts";
 import { findTableColumn, toFiltersWhere } from "./query-cond.ts";
 

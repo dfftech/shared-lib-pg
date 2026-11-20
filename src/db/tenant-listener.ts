@@ -42,14 +42,17 @@ function handleSyncError(error: unknown): void {
 export class TenantChangeListener {
   private readonly pools: PoolManager;
 
+  private readonly applicationName: string;
+
   private client: Client | null = null;
 
   private isStarted = false;
 
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(pools: PoolManager) {
+  constructor(pools: PoolManager, applicationName: string) {
     this.pools = pools;
+    this.applicationName = applicationName;
   }
 
   private async hasTrigger(): Promise<boolean> {
@@ -142,27 +145,52 @@ export class TenantChangeListener {
     if (!this.isStarted || this.client !== null) {
       return;
     }
-    const client = new Client({ connectionString: this.pools.coreConnectionUrl });
+    const client = new Client({
+      connectionString: this.pools.coreConnectionUrl,
+      application_name: `${this.applicationName}-tenant-listener`,
+    });
+    let listener: { database: string; backend_pid: number; channels: string[] } | undefined;
     try {
       await client.connect();
+      this.client = client;
+      const onNotification = this.handleNotification.bind(this);
+      client.on("notification", onNotification);
+      const onError = this.handleError.bind(this, client);
+      client.on("error", onError);
+      const onEnd = this.handleEnd.bind(this, client);
+      client.on("end", onEnd);
       await client.query(`LISTEN ${TENANT_CHANGE_CHANNEL}`);
+      const result = await client.query<{
+        database: string;
+        backend_pid: number;
+        channels: string[];
+      }>(`
+        SELECT current_database() AS database,
+          pg_backend_pid() AS backend_pid,
+          ARRAY(SELECT pg_listening_channels()) AS channels
+      `);
+      listener = result.rows[0];
+      if (listener === undefined || !listener.channels.includes(TENANT_CHANGE_CHANNEL)) {
+        throw new Error(`PostgreSQL session is not listening on ${TENANT_CHANGE_CHANNEL}`);
+      }
     } catch (error) {
       const errorText = readErrorText(error);
       appLogger.error("db: tenant change listener connect failed", { error: errorText });
+      if (this.client === client) {
+        this.client = null;
+      }
       const endPromise = client.end();
       endPromise.catch(ignoreError);
       this.scheduleReconnect();
       return;
     }
-    const onNotification = this.handleNotification.bind(this);
-    client.on("notification", onNotification);
-    const onError = this.handleError.bind(this, client);
-    client.on("error", onError);
-    const onEnd = this.handleEnd.bind(this, client);
-    client.on("end", onEnd);
-    this.client = client;
     await this.pools.syncTenantPools();
-    appLogger.info("db: listening for tenant changes", { channel: TENANT_CHANGE_CHANNEL });
+    appLogger.info("db: listening for tenant changes", {
+      channel: TENANT_CHANGE_CHANNEL,
+      database: listener?.database,
+      backend_pid: listener?.backend_pid,
+      channels: listener?.channels,
+    });
   }
 
   private handleNotification(message: Notification): void {

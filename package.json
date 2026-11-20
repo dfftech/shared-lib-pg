@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run verify"
   },
   "peerDependencies": {
-    "dff-util": ">=1.4.5",
+    "dff-util": ">=1.5.0",
     "drizzle-orm": "^0.45.4",
     "elysia": "^2.0.0-rc.3",
     "kafkajs": "^2.2.4",

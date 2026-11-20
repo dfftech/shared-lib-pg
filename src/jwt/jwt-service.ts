@@ -6,7 +6,8 @@
 //   expiresIn     token lifetime in seconds
 //   maxExpiresIn  max session age in seconds (regenerate stops after it)
 
-import { JwtDecode, JwtEncode, JwtValid, JwtVerify, type SessionInfo } from "dff-util";
+import { JwtDecode, JwtEncode, JwtValid, JwtVerify } from "dff-util";
+import type { SessionInfo } from "../app-types.ts";
 import { readAppConfig } from "../config/app-config.ts";
 import { readTenantId } from "../context/request-context.ts";
 

@@ -4,7 +4,7 @@
 //   await database.runWithTenant("acme", syncOrders, orderIds);
 //   await database.runWithTenant(undefined, cleanUp);            // single tenant / base database
 
-import type { SessionInfo } from "dff-util";
+import type { SessionInfo } from "../app-types.ts";
 import type { Database } from "../db/database.ts";
 import { RequestContext, requestStorage } from "./request-context.ts";
 
@@ -28,6 +28,7 @@ export async function createTenantContext(
     tenantId,
     sessionUser: options.sessionUser,
   });
+  context.database = database;
   context.sessionDb = await database.forTenant(tenantId);
   return context;
 }

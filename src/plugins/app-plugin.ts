@@ -11,7 +11,7 @@
 // Config log.isResponseLogged adds the (masked) reply to "Request completed". Application uses it for you.
 
 import { Elysia, status as elysiaStatus, type HTTPHeaders } from "elysia";
-import type { SessionInfo } from "dff-util";
+import type { SessionInfo } from "../app-types.ts";
 import { readAppConfig } from "../config/app-config.ts";
 import {
   BRANCH_HEADER,
@@ -64,6 +64,11 @@ function readRequestPath(request: Request): string {
   return url.pathname;
 }
 
+function readRequestPathAndQuery(request: Request): string {
+  const url = new URL(request.url);
+  return `${url.pathname}${url.search}`;
+}
+
 /** RequestContext from the request headers. */
 export function createRequestContext(request: Request): RequestContext {
   const headers = request.headers;
@@ -73,6 +78,7 @@ export function createRequestContext(request: Request): RequestContext {
     requestId: readRequestIdHeader(headers),
     method: request.method,
     path: readRequestPath(request),
+    pathAndQuery: readRequestPathAndQuery(request),
     traceId: readTraceIdHeader(headers),
     tenantId: readHeaderText(headers, TENANT_HEADER),
     branchId: readHeaderText(headers, BRANCH_HEADER),

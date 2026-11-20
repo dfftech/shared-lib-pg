@@ -1,6 +1,7 @@
 // shared-bun-elysia
 // Shared Bun + Elysia 2.0 backend library, object oriented: Application + modules (repository -> service ->
-// controller), one config (the app's config.ts reads process.env), multi-tenant PostgreSQL with Drizzle (Database),
+// controller), one config (the app's config.ts reads process.env or app-util env()), multi-tenant PostgreSQL with
+// Drizzle (Database),
 // multi-tenant Kafka logs (KafkaLogSink), JWT, AppError + ResponseType replies, search helpers, AppHttp.
 //
 //   // config.ts:  export const appConfig: AppConfig = { db: { url: process.env.CORE_DB_URL ?? "", ... }, modules };
@@ -10,8 +11,29 @@
 // ---- Application and modules ----
 export { Application } from "./app/application.ts";
 export { isModuleEnabled, type IModule, type ModuleClass, type ModuleDefinition } from "./app/module-types.ts";
+export type {
+  FileType,
+  JsonValueType,
+  KeyValueType,
+  OptionType,
+  OrderType,
+  PersonaType,
+  PubSubEventType,
+  RequestBodyType,
+  RequestByCodeType,
+  RequestByIdType,
+  RequestByKeyType,
+  RequestByNameType,
+  RequestByTypeType,
+  RequestParamType,
+  RequestQueryType,
+  ResponseType,
+  SearchType,
+  SessionInfo,
+  SessionUser,
+} from "./app-types.ts";
 
-// ---- Config (the app's config.ts reads process.env directly; parse* turn the text into typed values) ----
+// ---- Config (the app's config.ts uses env() / process.env; parse* turn the text into typed values) ----
 export {
   DEFAULT_LOG_TOPIC,
   DEFAULT_MASK_KEYS,
@@ -72,6 +94,7 @@ export {
   requestStorage,
   requireRequestContext,
   runWithContext,
+  type RequestDatabaseProvider,
   type RequestContextFields,
 } from "./context/request-context.ts";
 export { createTenantContext, runWithTenant, type TenantTaskOptions } from "./context/tenant-task.ts";
@@ -177,4 +200,26 @@ export { AppHttp, SERVICE_TOKEN_ROLE, type HttpHeaders, type HttpParams } from "
 export { APP_ERROR_STATUS, AppError, isAppError } from "./utils/app-error.ts";
 export { buildAuditColumns, type AuditColumns } from "./utils/audit-columns.ts";
 export { DELETED_SUCCESSFULLY, LISTED_SUCCESSFULLY, LOADED_SUCCESSFULLY, SAVED_SUCCESSFULLY } from "./utils/reply-status.ts";
-export { readErrorText, readOptionalNumber, readOptionalText, readText } from "./utils/text-util.ts";
+export {
+  branch_id,
+  core_db,
+  env,
+  env_base_name,
+  get_db,
+  logger,
+  query_params,
+  readErrorText,
+  readOptionalNumber,
+  readOptionalText,
+  readText,
+  request_id,
+  session_db,
+  session_meta,
+  session_user,
+  tenant_id,
+  tenant_ids,
+  token,
+  toEntityMapper,
+  toViewMapper,
+  type SessionMeta,
+} from "./utils/app-util.ts";

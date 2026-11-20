@@ -5,8 +5,9 @@
 // No / bad token -> 401 { data: null, error: "UNAUTHORIZED" }; no matching role -> 403 "FORBIDDEN".
 // appPlugin() only decodes the token (for logs); this plugin is the check. Handlers get { sessionUser }.
 
-import { ConstKeys, type SessionInfo } from "dff-util";
+import { ConstKeys } from "dff-util";
 import { Elysia } from "elysia";
+import type { SessionInfo } from "../app-types.ts";
 import { requireRequestContext } from "../context/request-context.ts";
 import { JwtService } from "../jwt/jwt-service.ts";
 import { AppError } from "../utils/app-error.ts";

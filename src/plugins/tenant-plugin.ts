@@ -38,6 +38,7 @@ function readTenantParam(options: TenantPluginOptions, routeContext: ParamsHolde
 
 async function resolveTenantDb(database: Database, options: TenantPluginOptions, routeContext: ParamsHolder): Promise<TenantProps> {
   const context = requireRequestContext();
+  context.database = database;
   const tenantId = context.tenantId ?? readTenantParam(options, routeContext);
   context.tenantId = tenantId;
   const sessionDb = await database.forTenant(tenantId);

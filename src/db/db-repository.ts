@@ -9,7 +9,7 @@
 //   without it -> the query runs on the database of the request (database.session())
 // The row helpers (and the base class) need a column named "id" in the table.
 
-import type { SearchType } from "dff-util";
+import type { SearchType } from "../app-types.ts";
 import { eq, type InferInsertModel, type InferSelectModel, type SQL } from "drizzle-orm";
 import type { PgColumn, PgInsertValue, PgTable, PgUpdateSetSource } from "drizzle-orm/pg-core";
 import { readSessionDb } from "../context/request-context.ts";

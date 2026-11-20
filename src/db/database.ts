@@ -19,6 +19,7 @@ import { appLogger } from "../logging/app-logger.ts";
 import { createTenantPlugin, type TenantPluginOptions } from "../plugins/tenant-plugin.ts";
 import { AppError } from "../utils/app-error.ts";
 import { buildTenantEntity } from "./db-schema.ts";
+import { readConnectionTarget } from "./db-url.ts";
 import { TransactionManager, type ITransaction } from "./db-transaction.ts";
 import type { AppDatabase, DbExecutor } from "./db-types.ts";
 import { PoolManager, isCoreTenant } from "./pool-manager.ts";
@@ -42,10 +43,10 @@ export class Database {
 
   private initPromise: Promise<void> | null = null;
 
-  constructor(config: DbConfig) {
+  constructor(config: DbConfig, applicationName = "app") {
     this.config = config;
     this.pools = new PoolManager(config);
-    this.listener = new TenantChangeListener(this.pools);
+    this.listener = new TenantChangeListener(this.pools, applicationName);
   }
 
   /** True when db.url is set. */
@@ -109,7 +110,11 @@ export class Database {
     if (!isOk) {
       throw new Error("core DB ping failed: expected a row with ok = 1");
     }
-    appLogger.info("db: core ping ok", { duration_ms: Date.now() - startTime });
+    appLogger.info("db: core connected", {
+      target: readConnectionTarget(this.config.url),
+      schema: this.schema,
+      duration_ms: Date.now() - startTime,
+    });
   }
 
   private async detectMultiTenant(): Promise<boolean> {

@@ -7,7 +7,7 @@ service from **one config** and registers **modules** (`Repository(database)` �
 
 | Encore core stack | shared-bun-elysia |
 | --- | --- |
-| `env()` everywhere | one `AppConfig` object in the app's `config.ts`, read directly from `process.env` (the only env read) |
+| `env()` everywhere | one `AppConfig` object in the app's `config.ts`, using `env()` for `BASE_NAME`-prefixed values |
 | `encore.service.ts` per module | `{module}.module.ts`: `class XModule implements IModule`, listed in `config.modules` |
 | `api<Dto, ResponseType>(...)` | `{module}.controller.ts`: class with handlers + `register(app)` |
 | static `XService` + `session_db()` | `XService(repository)` → `XRepository(database)` extends `DrizzleRepository` |
@@ -30,25 +30,23 @@ source (`"bun"` export condition); other runtimes use `dist/`.
 ## Service
 
 ```ts
-// src/config.ts — the ONLY place the service reads env: one AppConfig, straight from process.env
+// src/config.ts — builds one AppConfig; env() reads BASE_NAME-prefixed values
 export const MODULES: ModuleDefinition[] = [
   { name: "health", module: HealthModule },
   { name: "user", module: UserModule },
   { name: "address", module: AddressModule, isEnabled: true },
 ];
 
-const env = process.env;
-
 export const appConfig: AppConfig = {
-  serviceName: parseText(env.CORE_SERVICE_NAME, "user-service"),
+  serviceName: parseText(env("SERVICE_NAME"), "user-service"),
   db: {
-    url: parseText(env.CORE_DB_URL, ""),
-    poolSize: parseNumber(env.CORE_DB_POOL_SIZE, 10),
+    url: parseText(env("DB_URL"), ""),
+    poolSize: parseNumber(env("DB_POOL_SIZE"), 10),
     // ...
   },
-  kafka: { log: { isEnabled: parseBoolean(env.CORE_KAFKA_LOG_SEND, false), /* ... */ }, /* ... */ },
+  kafka: { log: { isEnabled: parseBoolean(env("KAFKA_LOG_SEND"), false), /* ... */ }, /* ... */ },
   modules: MODULES,
-  disabledModules: parseList(env.CORE_MODULES_DISABLED, []),
+  disabledModules: parseList(env("MODULES_DISABLED"), []),
   // ... every section of AppConfig (TypeScript requires all of them; see example/src/config.ts)
 };
 
@@ -63,6 +61,9 @@ await application.start();
 
 Modules are registered in the order of `config.modules`. A module is skipped when `isEnabled: false` or its name is in
 `config.disabledModules` (e.g. env `CORE_MODULES_DISABLED=audit-log,address`). Adding a module is one line in `config.ts`.
+
+Shared `dff-util` application types are re-exported from `shared-bun-elysia`, including `ResponseType`, `SearchType`,
+`SessionInfo`, `SessionUser`, and request parameter/body types.
 
 ## Module
 
@@ -160,19 +161,21 @@ bound once in `register` (`this.SaveUser.bind(this)`).
 
 ## Config
 
-The app's `config.ts` builds one `AppConfig` object and reads `process.env` there directly; no other code reads env.
-In Docker / Kubernetes the values come from the container environment (in development Bun also loads `.env`).
-The library only gives typed parsers for the env text (they never read env themselves; unset or empty → fallback):
+The app's `config.ts` builds one `AppConfig` object. Use `env("DB_URL")` to read `BASE_NAME_DB_URL`
+(`CORE_DB_URL` when `BASE_NAME=CORE`); `env_base_name()` returns the uppercased prefix and defaults to `"-"`.
+Other app settings can also be read from `process.env` directly in `config.ts`. In Docker / Kubernetes values come
+from the container environment (in development Bun also loads `.env`). The typed parsers do not read env themselves;
+unset or empty text gives the fallback:
 `parseText`, `parseNumber`, `parseBoolean`, `parseList`, `parseLogLevel`, `parseKafkaSasl(user, password, mechanism)`.
 `buildDefaultConfig()` / `mergeAppConfig(base, overrides)` build configs in code (tests); `Application` calls
 `setAppConfig`, the library reads `readAppConfig()`.
 
 | Config | Env in the example `config.ts` | Default there |
 | --- | --- | --- |
-| `serviceName`, `version` | `CORE_SERVICE_NAME`, (`package.json`) | `example-service` |
+| `serviceName`, `version` | `CORE_SERVICE_NAME`, (`package.json`) | `poc-shared-lib-pg` |
 | `server.port`, `server.hostname` | `PORT`, `CORE_HOSTNAME` | 4000, `0.0.0.0` |
 | `db.url` | `CORE_DB_URL` | — (no database) |
-| `db.poolSize`, `db.idleTimeoutMs`, `db.connectTimeoutMs` | `CORE_DB_POOL_SIZE`, `CORE_DB_IDLE_TIMEOUT_MS`, `CORE_DB_CONNECT_TIMEOUT_MS` | 10, 20000, 10000 |
+| `db.poolSize`, `db.idleTimeoutMs`, `db.connectTimeoutMs` | `CORE_DB_POOL_SIZE`, `CORE_DB_IDLE_TIMEOUT_MS`, `CORE_DB_CONNECT_TIMEOUT_MS` | 10, 20000, 60000 |
 | `db.isTenantEventsEnabled` | `CORE_DB_TENANT_EVENTS` | true |
 | `jwt.secret`, `jwt.key` | `CORE_API_JWT_SECRET`, `CORE_API_JWT_KEY` | — (no default secret), `API_JWT_KEY` |
 | `jwt.expiresIn`, `jwt.maxExpiresIn` | `CORE_API_JWT_EXPIRES_IN`, `CORE_API_JWT_MAX_EXPIRES_IN` | 900, 36000 (seconds) |
@@ -204,8 +207,12 @@ errors into replies, so handlers need no try / catch:
 
 For a failed query the reply `message` is the PostgreSQL message, never Drizzle's `Failed query: <sql> params: <values>`.
 
-Readers anywhere in a request: `readRequestId()`, `readTenantId()`, `readBranchId()`, `readToken()`,
-`readSessionUser()`, `readLogger()`, `readRequestContext()`.
+Request helpers are available anywhere in a request: `request_id()`, `tenant_id()`, `branch_id()`, `token()`,
+`session_user()`, `logger()`, `session_meta()`, and `query_params()`. `tenant_ids()` returns the active tenant IDs
+from the current request's database. The existing `read*` APIs remain available.
+`env("DB_URL")` reads `BASE_NAME_DB_URL` (for example, `CORE_DB_URL`); `env_base_name()` returns the uppercased
+`BASE_NAME`, defaulting to `"-"`. With `tenantPlugin()`, `core_db()`, `session_db()`, and `get_db(id)` return the
+base, current-request, and selected tenant databases. `session_db()` requires tenant middleware or `runWithTenant()`.
 
 ## Database — `Database`
 

@@ -8,6 +8,12 @@ export type ParsedConnectionUrl = {
   searchPath: string;
 };
 
+export type DbConnectionTarget = {
+  host: string;
+  port: string;
+  database: string;
+};
+
 export const DEFAULT_SCHEMA = "public";
 
 const OPTIONS_PARAM = /[?&]options=([^&]*)/i;
@@ -57,6 +63,21 @@ export function parseConnectionUrl(rawUrl: string | undefined): ParsedConnection
   const withoutEmptyQuery = withoutLeftover.replace(EMPTY_QUERY_END, "");
   const url = withoutEmptyQuery.replace(WEAK_SSL_MODE, "sslmode=verify-full");
   return { url, searchPath };
+}
+
+/** Safe connection target for diagnostics, excluding username, password and query parameters. */
+export function readConnectionTarget(rawUrl: string | undefined): DbConnectionTarget | undefined {
+  const parsed = parseConnectionUrl(rawUrl);
+  if (parsed.url === "") {
+    return undefined;
+  }
+  try {
+    const url = new URL(parsed.url);
+    const database = url.pathname.replace(/^\/+/, "");
+    return { host: url.hostname, port: url.port || "5432", database };
+  } catch {
+    return undefined;
+  }
 }
 
 /** "name" -> "\"name\"" for SQL identifiers. */

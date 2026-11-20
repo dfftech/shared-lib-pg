@@ -5,7 +5,7 @@
 // Kafka consumers and jobs get the same context with runWithTenant() (tenant-task.ts).
 
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { SessionInfo } from "dff-util";
+import type { SessionInfo } from "../app-types.ts";
 import type { AppDatabase } from "../db/db-types.ts";
 import { ContextLogger, appLogger } from "../logging/app-logger.ts";
 import type { AppLogger, LogContext, LogContextReader } from "../logging/log-types.ts";
@@ -17,11 +17,18 @@ export type RequestContextFields = {
   requestId: string;
   method: string;
   path: string;
+  pathAndQuery?: string;
   traceId?: string;
   tenantId?: string;
   branchId?: string;
   token?: string;
   sessionUser?: SessionInfo;
+};
+
+export type RequestDatabaseProvider = {
+  core(): AppDatabase;
+  forTenant(tenantId?: string): Promise<AppDatabase>;
+  tenantIds(): string[];
 };
 
 /** Session of a request without a token. */
@@ -35,6 +42,8 @@ export class RequestContext implements LogContextReader {
   readonly method: string;
 
   readonly path: string;
+
+  readonly pathAndQuery: string;
 
   readonly startTime: number;
 
@@ -55,10 +64,13 @@ export class RequestContext implements LogContextReader {
 
   sessionDb: AppDatabase | undefined;
 
+  database: RequestDatabaseProvider | undefined;
+
   constructor(fields: RequestContextFields) {
     this.requestId = fields.requestId;
     this.method = fields.method;
     this.path = fields.path;
+    this.pathAndQuery = fields.pathAndQuery ?? fields.path;
     this.startTime = Date.now();
     this.traceId = fields.traceId;
     this.tenantId = fields.tenantId;

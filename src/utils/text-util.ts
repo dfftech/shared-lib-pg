@@ -26,10 +26,61 @@ export function readOptionalNumber(value: unknown): number | null {
   return Number.isFinite(numberValue) ? numberValue : null;
 }
 
-/** Error message of any thrown value. */
+function readErrorField(error: unknown, field: "text" | "message"): string | undefined {
+  if (error === null || typeof error !== "object") {
+    return undefined;
+  }
+  const errorRecord = error as Record<string, unknown>;
+  const value = errorRecord[field];
+  if (typeof value !== "string" || value.trim() === "") {
+    return undefined;
+  }
+  return value;
+}
+
+function readErrorData(error: unknown): string | undefined {
+  if (error === null || typeof error !== "object" || !("data" in error)) {
+    return undefined;
+  }
+  const data = error.data;
+  if (data === undefined) {
+    return undefined;
+  }
+  if (typeof data === "string") {
+    return data.trim() === "" ? undefined : data;
+  }
+  try {
+    const serializedData = JSON.stringify(data);
+    if (serializedData !== undefined) {
+      return serializedData;
+    }
+  } catch {
+    return String(data);
+  }
+  return String(data);
+}
+
+/** Text or message of a thrown value, JSON when available, otherwise its string representation. */
 export function readErrorText(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
+  const errorText = readErrorField(error, "text");
+  if (errorText !== undefined) {
+    return errorText;
+  }
+  const errorMessage = readErrorField(error, "message");
+  if (errorMessage !== undefined) {
+    return errorMessage;
+  }
+  const errorData = readErrorData(error);
+  if (errorData !== undefined) {
+    return errorData;
+  }
+  try {
+    const serializedError = JSON.stringify(error);
+    if (serializedError !== undefined) {
+      return serializedError;
+    }
+  } catch {
+    return String(error);
   }
   return String(error);
 }

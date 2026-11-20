@@ -10,6 +10,7 @@
 
 import { Elysia, type AnyElysia } from "elysia";
 import { setAppConfig, type AppConfig } from "../config/app-config.ts";
+import { readConnectionTarget } from "../db/db-url.ts";
 import { Database } from "../db/database.ts";
 import { KafkaClient } from "../kafka/kafka-client.ts";
 import { KafkaLogSink } from "../kafka/kafka-log-sink.ts";
@@ -17,6 +18,35 @@ import { appLogger } from "../logging/app-logger.ts";
 import { appPlugin } from "../plugins/app-plugin.ts";
 import { readErrorText } from "../utils/text-util.ts";
 import { isModuleEnabled, type IModule } from "./module-types.ts";
+
+function readErrorDiagnostics(error: unknown): Record<string, string | number> {
+  if (error === null || typeof error !== "object") {
+    return {};
+  }
+  const diagnostics: Record<string, string | number> = {};
+  if ("name" in error && typeof error.name === "string") {
+    diagnostics.error_name = error.name;
+  }
+  if ("stack" in error && typeof error.stack === "string") {
+    diagnostics.error_stack = error.stack;
+  }
+  if ("code" in error && typeof error.code === "string") {
+    diagnostics.error_code = error.code;
+  }
+  if ("errno" in error && (typeof error.errno === "number" || typeof error.errno === "string")) {
+    diagnostics.error_errno = error.errno;
+  }
+  if ("syscall" in error && typeof error.syscall === "string") {
+    diagnostics.error_syscall = error.syscall;
+  }
+  if ("address" in error && typeof error.address === "string") {
+    diagnostics.error_address = error.address;
+  }
+  if ("port" in error && typeof error.port === "number") {
+    diagnostics.error_port = error.port;
+  }
+  return diagnostics;
+}
 
 async function handleStopSignal(application: Application, signal: string): Promise<void> {
   appLogger.info("server: signal received", { signal });
@@ -49,7 +79,7 @@ export class Application {
   constructor(config: AppConfig) {
     setAppConfig(config);
     this.config = config;
-    this.database = new Database(config.db);
+    this.database = new Database(config.db, config.serviceName);
     this.kafka = new KafkaClient(config.kafka);
     this.logSink = new KafkaLogSink(config.kafka.log, this.kafka);
     const basePlugin = appPlugin();
@@ -88,11 +118,20 @@ export class Application {
   }
 
   private async initDatabaseSafely(): Promise<void> {
+    const startTime = Date.now();
     try {
       await this.database.init();
     } catch (error) {
       const errorText = readErrorText(error);
-      appLogger.error("db: init failed, the next request that needs the database tries again", { error: errorText });
+      const target = readConnectionTarget(this.config.db.url);
+      appLogger.error("db: init failed, the next request that needs the database tries again", {
+        error: errorText,
+        ...readErrorDiagnostics(error),
+        target,
+        schema: this.database.schema,
+        connect_timeout_ms: this.config.db.connectTimeoutMs,
+        duration_ms: Date.now() - startTime,
+      });
     }
   }
 

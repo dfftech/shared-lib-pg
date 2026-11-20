@@ -15,14 +15,18 @@ import {
   TransactionManager,
   appPlugin,
   buildSearchWhere,
+  core_db,
   deleteRowById,
   findRowById,
+  get_db,
   insertRow,
   readDbExecutor,
   readSessionDb,
   runInTransaction,
   searchPage,
   searchRows,
+  session_db,
+  tenant_ids,
   updateRowById,
   type AppTransactionDb,
 } from "../src/index.ts";
@@ -96,13 +100,31 @@ async function handleTransaction(context: { body: { id: string } }): Promise<Rep
   return { data: true };
 }
 
+async function handleDatabaseHelpers(): Promise<Reply> {
+  const coreDatabase = core_db();
+  const requestDatabase = session_db();
+  const selectedTenantDatabase = await get_db("globex");
+  const expectedCoreDatabase = database.core();
+  const expectedRequestDatabase = database.session();
+  const expectedTenantDatabase = await database.tenant("globex");
+  return {
+    data: {
+      core: coreDatabase.$client === expectedCoreDatabase.$client,
+      session: requestDatabase.$client === expectedRequestDatabase.$client,
+      tenant: selectedTenantDatabase.$client === expectedTenantDatabase.$client,
+      tenantIds: tenant_ids(),
+    },
+  };
+}
+
 function buildApp() {
   const tenantDb = database.tenantPlugin();
   const cityApi = new Elysia()
     .use(tenantDb)
     .post("/city-save", { body: t.Object({ id: t.String(), name: t.String() }) }, handleSave)
     .post("/city-search", { body: t.Object({ searchTerm: t.Optional(t.String()), limit: t.Optional(t.Number()) }) }, handleSearch)
-    .post("/city-transaction", { body: t.Object({ id: t.String() }) }, handleTransaction);
+    .post("/city-transaction", { body: t.Object({ id: t.String() }) }, handleTransaction)
+    .post("/db-helper", handleDatabaseHelpers);
   return new Elysia().use(appPlugin()).use(cityApi);
 }
 
@@ -175,6 +197,12 @@ async function testCoreTenant(): Promise<void> {
   const corePage = await post("/city-search", {}, "core");
   expect(corePage.body.total).toBe(1);
   expect(corePage.body.data[0].name).toBe("Core City");
+}
+
+async function testDatabaseHelpers(): Promise<void> {
+  const reply = await post("/db-helper", {}, "acme");
+  expect(reply.status).toBe(200);
+  expect(reply.body.data).toEqual({ core: true, session: true, tenant: true, tenantIds: ["acme", "globex"] });
 }
 
 async function countCities(): Promise<number> {
@@ -311,6 +339,7 @@ describe("multi-tenant database", () => {
   it("routes every request to its tenant database", testTenantIsolation);
   it("400 without tenant, 404 for an unknown tenant", testTenantErrors);
   it('"core" is the base database', testCoreTenant);
+  it("app-util returns the core, request and selected tenant databases", testDatabaseHelpers);
   it("runWithTenant gives background work the tenant database", testRunWithTenant);
   it("runInTransaction rolls back on error", testTransactionRollback);
   it("searchRows returns entity rows (snake_case) for a mapper", testSearchRows);

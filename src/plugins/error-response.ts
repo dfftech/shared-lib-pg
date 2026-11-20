@@ -8,7 +8,8 @@
 // For a wrapped error (Drizzle "Failed query: <sql> params: <values>") the reply message is the cause
 // (the PostgreSQL message), so SQL and parameter values never reach the client; the log keeps everything.
 
-import { ConstKeys, type ResponseType } from "dff-util";
+import { ConstKeys } from "dff-util";
+import type { ResponseType } from "../app-types.ts";
 import { ElysiaError, NotFound, ParseError, ValidationError } from "elysia";
 import { isAppError } from "../utils/app-error.ts";
 import { readErrorText } from "../utils/text-util.ts";
