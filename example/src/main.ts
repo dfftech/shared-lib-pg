@@ -2,7 +2,7 @@
 // Starts the example service: Kafka logs -> database (multi-tenant detect, tenant pools) -> modules -> HTTP.
 //   cd example && cp .env.example .env && bun run dev
 
-import { Application } from "shared-bun-elysia";
+import { Application } from "shared-lib-pg";
 import { appConfig } from "./config.ts";
 
 const application = new Application(appConfig);

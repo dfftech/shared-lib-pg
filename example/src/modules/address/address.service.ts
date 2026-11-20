@@ -5,7 +5,7 @@
 //   audit trail -> AuditLogService (given in the constructor), in the same transaction
 // Returns views and throws AppError(code) for expected failures; never builds a ResponseType.
 
-import { AppError, logger, readText, session_user, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { AppError, logger, readText, session_user, type ITransaction, type SearchPage } from "shared-lib-pg";
 import type { AuditLogService } from "../audit-log/audit-log.service.ts";
 import type { AddressSaveDto, AddressSearchDto, AddressView } from "./address.dto.ts";
 import { AddressMapper, type AddressValues } from "./address.mapper.ts";

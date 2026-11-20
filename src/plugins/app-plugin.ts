@@ -57,7 +57,7 @@ export type RequestContextProps = {
   logger: AppLogger;
 };
 
-export const APP_PLUGIN_NAME = "shared-bun-elysia/app";
+export const APP_PLUGIN_NAME = "shared-lib-pg/app";
 
 function readRequestPath(request: Request): string {
   const url = new URL(request.url);

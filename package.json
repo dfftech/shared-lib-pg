@@ -1,10 +1,10 @@
 {
-  "name": "shared-bun-elysia",
+  "name": "shared-lib-pg",
   "version": "0.0.1",
   "description": "Shared Bun + Elysia 2.0 backend library for DesignForFeature services: request context (AsyncLocalStorage), multi-tenant PostgreSQL with Drizzle ORM (tenant registry, pool per tenant, LISTEN/NOTIFY sync), multi-tenant Kafka logs (batched, masked, tenant key or topic per tenant), JWT, AppError + ResponseType replies, search helpers and AppHttp service calls.",
   "keywords": [
     "dff",
-    "shared-bun-elysia",
+    "shared-lib-pg",
     "bun",
     "elysia",
     "drizzle",

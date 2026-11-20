@@ -5,7 +5,7 @@
 //   entity      -> reply view (camelCase)   ToView, ToViewList, ToViewPage
 
 import { randomUUID } from "node:crypto";
-import { buildAuditColumns, readOptionalText, readText, type AuditColumns, type SearchPage } from "shared-bun-elysia";
+import { buildAuditColumns, readOptionalText, readText, type AuditColumns, type SearchPage } from "shared-lib-pg";
 import type { UserSaveDto, UserView } from "./user.dto.ts";
 import type { UserEntity } from "./user.entity.ts";
 

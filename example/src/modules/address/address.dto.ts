@@ -3,7 +3,7 @@
 // Field names are camelCase.
 
 import { t } from "elysia";
-import { idParamsSchema, searchFields, type Static } from "shared-bun-elysia";
+import { idParamsSchema, searchFields, type Static } from "shared-lib-pg";
 
 export class AddressDto {
   static readonly SaveSchema = t.Object({

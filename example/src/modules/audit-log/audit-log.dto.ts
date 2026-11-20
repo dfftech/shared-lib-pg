@@ -2,7 +2,7 @@
 // Request schemas of the audit trail (static, Elysia validates them), their types, the actions and the reply view.
 
 import { t } from "elysia";
-import { idParamsSchema, searchFields, type Static } from "shared-bun-elysia";
+import { idParamsSchema, searchFields, type Static } from "shared-lib-pg";
 
 export const AUDIT_ACTIONS = ["CREATE", "UPDATE", "DELETE"] as const;
 

@@ -6,7 +6,7 @@
 // Handlers stay thin: no try / catch (appPlugin turns AppError and other errors into replies).
 
 import type { Elysia } from "elysia";
-import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY, type ResponseType } from "shared-bun-elysia";
+import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY, type ResponseType } from "shared-lib-pg";
 import { AddressDto, type AddressIdParams, type AddressSaveDto, type AddressSearchDto } from "./address.dto.ts";
 import type { AddressService } from "./address.service.ts";
 

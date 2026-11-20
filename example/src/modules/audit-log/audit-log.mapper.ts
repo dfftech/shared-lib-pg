@@ -4,7 +4,7 @@
 //   entity                  -> reply view            ToView, ToViewList, ToViewPage
 
 import { randomUUID } from "node:crypto";
-import type { SearchPage } from "shared-bun-elysia";
+import type { SearchPage } from "shared-lib-pg";
 import type { AuditAction, AuditLogView } from "./audit-log.dto.ts";
 import type { AuditLogEntity, AuditLogValues } from "./audit-log.entity.ts";
 

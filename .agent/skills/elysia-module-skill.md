@@ -1,7 +1,7 @@
 ---
 name: elysia-module
 description: >
-  Object oriented module structure for Bun + Elysia 2.0 services on shared-bun-elysia: {module}.module.ts
+  Object oriented module structure for Bun + Elysia 2.0 services on shared-lib-pg: {module}.module.ts
   (implements IModule), .controller.ts, .service.ts, .repository.ts (extends DrizzleRepository), static
   .mapper.ts and .dto.ts, .entity.ts; constructor injection Repository(database) -> Service(repository) ->
   Controller(service) -> Module(database); save + search + entity-by-id routes; registered from config.ts.

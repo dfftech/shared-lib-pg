@@ -3,7 +3,7 @@
 // RecordService with THEIR transaction, so a change and its audit entry are saved together or not at all.
 // Who, request id and branch come from the request context; AuditLogMapper builds the row and the views.
 
-import { branch_id, request_id, session_user, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { branch_id, request_id, session_user, type ITransaction, type SearchPage } from "shared-lib-pg";
 import type { AuditAction, AuditLogSearchDto, AuditLogView } from "./audit-log.dto.ts";
 import { AuditLogMapper } from "./audit-log.mapper.ts";
 import type { AuditLogRepository } from "./audit-log.repository.ts";

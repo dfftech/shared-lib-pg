@@ -1,4 +1,4 @@
-// shared-bun-elysia
+// shared-lib-pg
 // Shared Bun + Elysia 2.0 backend library, object oriented: Application + modules (repository -> service ->
 // controller), one config (the app's config.ts reads process.env or app-util env()), multi-tenant PostgreSQL with
 // Drizzle (Database),

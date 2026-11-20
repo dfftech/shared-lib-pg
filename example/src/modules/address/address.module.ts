@@ -3,7 +3,7 @@
 // writes to) and registers the controller's routes with the tenant database of the request.
 
 import { Elysia, type AnyElysia } from "elysia";
-import type { Database, IModule } from "shared-bun-elysia";
+import type { Database, IModule } from "shared-lib-pg";
 import { AuditLogRepository } from "../audit-log/audit-log.repository.ts";
 import { AuditLogService } from "../audit-log/audit-log.service.ts";
 import { AddressController } from "./address.controller.ts";

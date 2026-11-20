@@ -1,6 +1,6 @@
 // check-code-style.mjs
 //
-// Checks the "easy to read" coding rules of shared-bun-elysia (same rules as shared-lib-web).
+// Checks the "easy to read" coding rules of shared-lib-pg (same rules as shared-lib-web).
 // Run it with: bun scripts/check-code-style.mjs src example/src
 //
 // Rule 1 - NO_NESTED_FUNCTION

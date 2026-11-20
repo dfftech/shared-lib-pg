@@ -1,11 +1,11 @@
-# shared-bun-elysia
+# shared-lib-pg
 
 Bun + Elysia 2.0 backend library for DesignForFeature services, object oriented: an `Application` builds the
 service from **one config** and registers **modules** (`Repository(database)` → `Service(repository)` →
 `Controller(service)` → `Module(database)`). Multi-tenant PostgreSQL with Drizzle ORM, multi-tenant Kafka logs, JWT,
 `AppError` + `ResponseType` replies, search helpers and `AppHttp`. Built on `dff-util`. MIT license.
 
-| Encore core stack | shared-bun-elysia |
+| Encore core stack | shared-lib-pg |
 | --- | --- |
 | `env()` everywhere | one `AppConfig` object in the app's `config.ts`, using `env()` for `BASE_NAME`-prefixed values |
 | `encore.service.ts` per module | `{module}.module.ts`: `class XModule implements IModule`, listed in `config.modules` |
@@ -21,7 +21,7 @@ service from **one config** and registers **modules** (`Repository(database)` �
 ## Install
 
 ```bash
-bun add shared-bun-elysia elysia@2.0.0-rc.3 typebox drizzle-orm pg kafkajs dff-util
+bun add shared-lib-pg elysia@2.0.0-rc.3 typebox drizzle-orm pg kafkajs dff-util
 ```
 
 Elysia 2.0 is a release candidate (`latest` on npm is still 1.4). On Bun the package runs from its TypeScript
@@ -62,7 +62,7 @@ await application.start();
 Modules are registered in the order of `config.modules`. A module is skipped when `isEnabled: false` or its name is in
 `config.disabledModules` (e.g. env `CORE_MODULES_DISABLED=audit-log,address`). Adding a module is one line in `config.ts`.
 
-Shared `dff-util` application types are re-exported from `shared-bun-elysia`, including `ResponseType`, `SearchType`,
+Shared `dff-util` application types are re-exported from `shared-lib-pg`, including `ResponseType`, `SearchType`,
 `SessionInfo`, `SessionUser`, and request parameter/body types.
 
 ## Module

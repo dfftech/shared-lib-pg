@@ -2,7 +2,7 @@
 // Health checks: the service itself (no database) and one tenant database (a ping on the request database).
 
 import { sql } from "drizzle-orm";
-import { logger, readAppConfig, session_db, tenant_id, type Database } from "shared-bun-elysia";
+import { logger, readAppConfig, session_db, tenant_id, type Database } from "shared-lib-pg";
 
 export type ServiceHealth = {
   message: string;

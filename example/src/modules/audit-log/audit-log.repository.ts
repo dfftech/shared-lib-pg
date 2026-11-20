@@ -4,7 +4,7 @@
 // every method takes an optional transaction last.
 
 import { eq, type AnyColumn, type SQL } from "drizzle-orm";
-import { DrizzleRepository, buildSearchWhere, readText, type Database, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { DrizzleRepository, buildSearchWhere, readText, type Database, type ITransaction, type SearchPage } from "shared-lib-pg";
 import type { AuditLogSearchDto } from "./audit-log.dto.ts";
 import { auditLogEntity, type AuditLogEntity } from "./audit-log.entity.ts";
 

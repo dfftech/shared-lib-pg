@@ -2,7 +2,7 @@
 // Request schemas of the user module (static, Elysia validates them), their types and the reply view.
 
 import { t } from "elysia";
-import { idParamsSchema, searchFields, type Static } from "shared-bun-elysia";
+import { idParamsSchema, searchFields, type Static } from "shared-lib-pg";
 
 export class UserDto {
   static readonly SaveSchema = t.Object({

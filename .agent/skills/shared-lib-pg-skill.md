@@ -1,14 +1,14 @@
 ---
-name: shared-bun-elysia
+name: shared-lib-pg
 description: >
-  How to build a Bun + Elysia 2.0 backend service on the object oriented shared-bun-elysia library: one AppConfig
+  How to build a Bun + Elysia 2.0 backend service on the object oriented shared-lib-pg library: one AppConfig
   (written in config.ts straight from process.env), Application (Database, Kafka, appPlugin, modules from config),
   IModule classes with constructor injection, database.tenantPlugin (multi-tenant PostgreSQL + Drizzle),
   DrizzleRepository, multi-tenant Kafka logs, AppError + ResponseType replies, JWT / authPlugin, AppHttp.
   Use with elysia-module-skill.md for module files and dff-code-style-skill.md for code style.
 ---
 
-# shared-bun-elysia — service guide
+# shared-lib-pg — service guide
 
 The service owns ONLY: `src/config.ts`, `src/main.ts`, `src/modules/*`, SQL migrations and `.env`.
 Never re-implement in a service: env parsing, request id / tenant / branch headers, logging, Kafka logging, log
@@ -54,7 +54,7 @@ sql/              migrations (tables are never created from Drizzle entities)
 ## Elysia 2.0
 
 - Route order is `(path, hook, handler)`: `app.post("/x-save", { body: XDto.SaveSchema }, saveX)`.
-- Plugin scope `'scoped'` is now `'plugin'`. Schema types: `Static<typeof XDto.SaveSchema>` from `shared-bun-elysia`.
+- Plugin scope `'scoped'` is now `'plugin'`. Schema types: `Static<typeof XDto.SaveSchema>` from `shared-lib-pg`.
 - In `onError` use `status(code, body)`; `set.status = 200` is ignored there (the library does this for you).
 
 ## Multi-tenant model

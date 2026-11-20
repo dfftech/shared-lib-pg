@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "paths": {
-      "shared-bun-elysia": ["../src/index.ts"]
+      "shared-lib-pg": ["../src/index.ts"]
     }
   },
   "include": ["src", "tests"]

@@ -4,7 +4,7 @@
 //   bun run logs app-logs-acme   -> one topic
 // Uses a new consumer group each run and starts at the newest message. Kafka settings come from config.ts.
 
-import { KafkaClient, type KafkaInboundMessage } from "shared-bun-elysia";
+import { KafkaClient, type KafkaInboundMessage } from "shared-lib-pg";
 import { appConfig } from "./config.ts";
 
 const TENANT_PLACEHOLDER = "{tenant}";

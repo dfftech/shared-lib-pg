@@ -14,7 +14,7 @@ import {
   toViewMapper,
   type AuditColumns,
   type SearchPage,
-} from "shared-bun-elysia";
+} from "shared-lib-pg";
 import type { AddressSaveDto, AddressView } from "./address.dto.ts";
 import type { AddressEntity } from "./address.entity.ts";
 

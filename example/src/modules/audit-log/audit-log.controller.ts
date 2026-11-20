@@ -5,7 +5,7 @@
 //   GET  /audit-log-entity/:id    EntityByIdAuditLog
 
 import type { Elysia } from "elysia";
-import { LISTED_SUCCESSFULLY, type ResponseType } from "shared-bun-elysia";
+import { LISTED_SUCCESSFULLY, type ResponseType } from "shared-lib-pg";
 import { AuditLogDto, type AuditLogIdParams, type AuditLogSearchDto } from "./audit-log.dto.ts";
 import type { AuditLogService } from "./audit-log.service.ts";
 

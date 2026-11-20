@@ -3,7 +3,7 @@
 // with the tenant database of the request.
 
 import { Elysia, type AnyElysia } from "elysia";
-import type { Database, IModule } from "shared-bun-elysia";
+import type { Database, IModule } from "shared-lib-pg";
 import { AuditLogController } from "./audit-log.controller.ts";
 import { AuditLogRepository } from "./audit-log.repository.ts";
 import { AuditLogService } from "./audit-log.service.ts";

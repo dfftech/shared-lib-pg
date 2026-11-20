@@ -4,7 +4,7 @@
 //   GET /health/:id   :id is the tenant (or x-tenant-id): pings its database  registerTenantRoutes(app)
 
 import type { Elysia } from "elysia";
-import type { ResponseType } from "shared-bun-elysia";
+import type { ResponseType } from "shared-lib-pg";
 import type { HealthService } from "./health.service.ts";
 
 export class HealthController {

@@ -1,4 +1,4 @@
-# Coding rules for shared-bun-elysia
+# Coding rules for shared-lib-pg
 
 The same rules as `shared-lib-web`, so the code is easy to read for **people and AI tools**.
 `bun run check:style` checks rules 1–3 and 10 (file names) in `src/` and `example/src/` and fails the build when one is broken.

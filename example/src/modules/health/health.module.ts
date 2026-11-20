@@ -3,7 +3,7 @@
 // /health/:id with the tenant database (tenant from the path when there is no x-tenant-id header).
 
 import { Elysia, type AnyElysia } from "elysia";
-import type { Database, IModule } from "shared-bun-elysia";
+import type { Database, IModule } from "shared-lib-pg";
 import { HealthController } from "./health.controller.ts";
 import { HealthService } from "./health.service.ts";
 

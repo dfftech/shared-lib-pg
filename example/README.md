@@ -1,6 +1,6 @@
-# shared-bun-elysia example
+# shared-lib-pg example
 
-An object oriented multi-tenant service built on `shared-bun-elysia`, the shape of every service: `config.ts` (which
+An object oriented multi-tenant service built on `shared-lib-pg`, the shape of every service: `config.ts` (which
 uses `env()` to read `BASE_NAME`-prefixed settings) builds one `AppConfig` and lists the modules, `main.ts` runs
 `new Application(appConfig).start()`, and each module builds
 `Repository(database)` → `Service(repository)` → `Controller(service)` in its constructor. One database per tenant

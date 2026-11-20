@@ -18,7 +18,7 @@ import {
   setAppConfig,
   type AppConfig,
   type ModuleDefinition,
-} from 'shared-bun-elysia';
+} from 'shared-lib-pg';
 import examplePackage from "../package.json" with { type: "json" };
 import { AddressModule } from "./modules/address/address.module.ts";
 import { AuditLogModule } from "./modules/audit-log/audit-log.module.ts";
