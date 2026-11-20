@@ -42,8 +42,7 @@ const environment = {
   serviceName: env('SERVICE_NAME') || 'poc-shared-lib-pg',
   dbUrl:
     env('DB_URL') ||
-    // 'postgresql://app_user:QdpwJyvVKE7mUBlbwWVhwktP@a660b108d0370487f8417aba1d011806-1681852654.ca-central-1.elb.amazonaws.com:25432/test',
-    'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=core"',
+    'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require',
   dbPoolSize: env('DB_POOL_SIZE') || '5',
   dbIdleTimeoutMs: env('DB_IDLE_TIMEOUT_MS'),
   dbConnectTimeoutMs: env('DB_CONNECT_TIMEOUT_MS'),
