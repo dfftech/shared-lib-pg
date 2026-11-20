@@ -6,5 +6,5 @@
       "shared-bun-elysia": ["../src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }

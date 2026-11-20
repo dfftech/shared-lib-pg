@@ -1,10 +1,7 @@
--- 0001-tenant.sql
--- Tenant schemas of the example (see the "db" URLs in core.tenants), each with the user, address and audit tables.
--- A new tenant: create its schema / database with these tables, then insert a row into core.tenants.
 
-CREATE SCHEMA IF NOT EXISTS tenant_acme;
+CREATE SCHEMA IF NOT EXISTS acme;
 
-CREATE TABLE IF NOT EXISTS tenant_acme.addresses (
+CREATE TABLE IF NOT EXISTS acme.addresses (
   id          varchar(255) PRIMARY KEY,
   address     text NOT NULL,
   area        varchar(255),
@@ -21,7 +18,7 @@ CREATE TABLE IF NOT EXISTS tenant_acme.addresses (
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS tenant_acme.audit_logs (
+CREATE TABLE IF NOT EXISTS acme.audit_logs (
   id          varchar(255) PRIMARY KEY,
   entity      varchar(100) NOT NULL,
   entity_id   varchar(255) NOT NULL,
@@ -33,9 +30,9 @@ CREATE TABLE IF NOT EXISTS tenant_acme.audit_logs (
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS audit_logs_entity_idx ON tenant_acme.audit_logs (entity, entity_id);
+CREATE INDEX IF NOT EXISTS audit_logs_entity_idx ON acme.audit_logs (entity, entity_id);
 
-CREATE TABLE IF NOT EXISTS tenant_acme.users (
+CREATE TABLE IF NOT EXISTS acme.users (
   id          varchar(255) PRIMARY KEY,
   name        text NOT NULL,
   email       varchar(255) NOT NULL,
@@ -48,12 +45,28 @@ CREATE TABLE IF NOT EXISTS tenant_acme.users (
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON tenant_acme.users (email);
+CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx ON acme.users (email);
 
-CREATE SCHEMA IF NOT EXISTS tenant_globex;
+CREATE SCHEMA IF NOT EXISTS globex;
 
-CREATE TABLE IF NOT EXISTS tenant_globex.addresses (LIKE tenant_acme.addresses INCLUDING ALL);
+CREATE TABLE IF NOT EXISTS globex.addresses (LIKE acme.addresses INCLUDING ALL);
 
-CREATE TABLE IF NOT EXISTS tenant_globex.audit_logs (LIKE tenant_acme.audit_logs INCLUDING ALL);
+CREATE TABLE IF NOT EXISTS globex.audit_logs (LIKE acme.audit_logs INCLUDING ALL);
 
-CREATE TABLE IF NOT EXISTS tenant_globex.users (LIKE tenant_acme.users INCLUDING ALL);
+CREATE TABLE IF NOT EXISTS globex.users (LIKE acme.users INCLUDING ALL);
+
+CREATE SCHEMA IF NOT EXISTS swan;
+
+CREATE TABLE IF NOT EXISTS swan.addresses (LIKE acme.addresses INCLUDING ALL);
+
+CREATE TABLE IF NOT EXISTS swan.audit_logs (LIKE acme.audit_logs INCLUDING ALL);
+
+CREATE TABLE IF NOT EXISTS swan.users (LIKE acme.users INCLUDING ALL);
+
+CREATE SCHEMA IF NOT EXISTS dff;
+
+CREATE TABLE IF NOT EXISTS dff.addresses (LIKE acme.addresses INCLUDING ALL);
+
+CREATE TABLE IF NOT EXISTS dff.audit_logs (LIKE acme.audit_logs INCLUDING ALL);
+
+CREATE TABLE IF NOT EXISTS dff.users (LIKE acme.users INCLUDING ALL);

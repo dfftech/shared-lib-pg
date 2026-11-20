@@ -5,7 +5,7 @@
 //   audit trail -> AuditLogService (given in the constructor), in the same transaction
 // Returns views and throws AppError(code) for expected failures; never builds a ResponseType.
 
-import { AppError, readLogger, readSessionUser, readText, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { AppError, logger, readText, session_user, type ITransaction, type SearchPage } from "shared-bun-elysia";
 import type { AuditLogService } from "../audit-log/audit-log.service.ts";
 import type { AddressSaveDto, AddressSearchDto, AddressView } from "./address.dto.ts";
 import { AddressMapper, type AddressValues } from "./address.mapper.ts";
@@ -47,7 +47,7 @@ export class AddressService {
   async SaveInTransaction(values: AddressValues, transaction: ITransaction): Promise<AddressView> {
     const existing = await this.repository.FindById(values.id, transaction);
     const isNew = existing === undefined;
-    const sessionUser = readSessionUser();
+    const sessionUser = session_user();
     const entity = AddressMapper.ToEntity(values, existing, sessionUser.id);
     const saved = isNew ? await this.repository.Create(entity, transaction) : await this.repository.UpdateById(entity.id, entity, transaction);
     if (saved === undefined) {
@@ -56,8 +56,8 @@ export class AddressService {
     const view = AddressMapper.ToView(saved);
     const action = isNew ? "CREATE" : "UPDATE";
     await this.auditLogService.RecordService(AUDIT_ENTITY, view.id, action, view, transaction);
-    const logger = readLogger();
-    logger.info("Saved address", { id: view.id, isNew });
+    const requestLogger = logger();
+    requestLogger.info("Saved address", { id: view.id, isNew });
     return view;
   }
 

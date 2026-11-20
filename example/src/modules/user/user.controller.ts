@@ -5,9 +5,8 @@
 //   GET  /user-entity/:id   EntityByIdUser
 // Handlers stay thin: no try / catch (appPlugin turns AppError and other errors into replies).
 
-import type { ResponseType } from "dff-util";
 import type { Elysia } from "elysia";
-import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY } from "shared-bun-elysia";
+import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY, type ResponseType } from "shared-bun-elysia";
 import { UserDto, type UserIdParams, type UserSaveDto, type UserSearchDto } from "./user.dto.ts";
 import type { UserService } from "./user.service.ts";
 

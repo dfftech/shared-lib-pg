@@ -2,7 +2,7 @@
 // Health checks: the service itself (no database) and one tenant database (a ping on the request database).
 
 import { sql } from "drizzle-orm";
-import { readAppConfig, readLogger, readTenantId, type Database } from "shared-bun-elysia";
+import { logger, readAppConfig, session_db, tenant_id, type Database } from "shared-bun-elysia";
 
 export type ServiceHealth = {
   message: string;
@@ -52,13 +52,13 @@ export class HealthService {
   /** Pings the database of the request tenant. */
   async CheckTenantService(): Promise<TenantHealth> {
     const config = readAppConfig();
-    const db = this.database.session();
+    const db = session_db();
     const startTime = Date.now();
     await db.execute(sql`SELECT 1`);
     const dbPingMs = Date.now() - startTime;
-    const tenant = readTenantId();
-    const logger = readLogger();
-    logger.info("Tenant health check", { tenant, db_ping_ms: dbPingMs });
+    const tenant = tenant_id();
+    const requestLogger = logger();
+    requestLogger.info("Tenant health check", { tenant, db_ping_ms: dbPingMs });
     return { message: HEALTH_PASS, tenant, version: config.version, dbPingMs };
   }
 }

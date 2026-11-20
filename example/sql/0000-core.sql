@@ -18,9 +18,13 @@ CREATE TABLE IF NOT EXISTS core.tenants (
 );
 
 INSERT INTO core.tenants (id, name, db) VALUES
-  ('acme', 'Acme', 'postgresql://postgres:postgres@localhost:5432/app?options=-c%20search_path%3Dtenant_acme'),
-  ('globex', 'Globex', 'postgresql://postgres:postgres@localhost:5432/app?options=-c%20search_path%3Dtenant_globex')
+  ('acme', 'Acme', 'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=acme"'),
+  ('globex', 'Globex', 'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=globex"'),
+  ('swan', 'Swan', 'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=swan"'),
+  ('dff', 'DFF', 'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=dff"')
 ON CONFLICT (id) DO NOTHING;
+
+
 
 -- x-tenant-id: core uses the base database itself, so it has the module tables too.
 CREATE TABLE IF NOT EXISTS core.addresses (

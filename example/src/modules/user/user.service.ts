@@ -6,7 +6,7 @@
 // Returns views and throws AppError(code) for expected failures; never builds a ResponseType.
 
 import { RegExp as DffRegExp } from "dff-util";
-import { AppError, readLogger, readSessionUser, readText, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { AppError, logger, readText, session_user, type ITransaction, type SearchPage } from "shared-bun-elysia";
 import type { AuditLogService } from "../audit-log/audit-log.service.ts";
 import type { UserSaveDto, UserSearchDto, UserView } from "./user.dto.ts";
 import { UserMapper, type UserValues } from "./user.mapper.ts";
@@ -53,7 +53,7 @@ export class UserService {
     }
     const existing = await this.repository.FindById(values.id, transaction);
     const isNew = existing === undefined;
-    const sessionUser = readSessionUser();
+    const sessionUser = session_user();
     const entity = UserMapper.ToEntity(values, existing, sessionUser.id);
     const saved = isNew ? await this.repository.Create(entity, transaction) : await this.repository.UpdateById(entity.id, entity, transaction);
     if (saved === undefined) {
@@ -62,8 +62,8 @@ export class UserService {
     const view = UserMapper.ToView(saved);
     const action = isNew ? "CREATE" : "UPDATE";
     await this.auditLogService.RecordService(AUDIT_ENTITY, view.id, action, view, transaction);
-    const logger = readLogger();
-    logger.info("Saved user", { id: view.id, isNew, email: view.email });
+    const requestLogger = logger();
+    requestLogger.info("Saved user", { id: view.id, isNew, email: view.email });
     return view;
   }
 

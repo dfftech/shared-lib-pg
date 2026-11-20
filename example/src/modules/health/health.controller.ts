@@ -3,8 +3,8 @@
 //   GET /health       the service is up (no database needed)               register(app)
 //   GET /health/:id   :id is the tenant (or x-tenant-id): pings its database  registerTenantRoutes(app)
 
-import type { ResponseType } from "dff-util";
 import type { Elysia } from "elysia";
+import type { ResponseType } from "shared-bun-elysia";
 import type { HealthService } from "./health.service.ts";
 
 export class HealthController {

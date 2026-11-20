@@ -1,21 +1,24 @@
 // config.ts
-// The configuration of the example service, read directly from the environment (process.env). This is the ONLY
-// place the service reads env: the library and the modules read this config (Application sets it).
+// The configuration of the example service. env() reads BASE_NAME-prefixed values; Application gives this config to
+// the library and modules.
 // In Docker / Kubernetes the values come from the container environment; in development Bun also loads example/.env.
 // Modules are registered in this order. Add a module = one line in MODULES. Turn one off without code changes:
 // isEnabled: false here, or CORE_MODULES_DISABLED=audit-log in the environment.
 
 import {
+  buildDefaultConfig,
   DEFAULT_MASK_KEYS,
+  env,
   parseBoolean,
   parseKafkaSasl,
   parseList,
   parseLogLevel,
   parseNumber,
   parseText,
+  setAppConfig,
   type AppConfig,
   type ModuleDefinition,
-} from "shared-bun-elysia";
+} from 'shared-bun-elysia';
 import examplePackage from "../package.json" with { type: "json" };
 import { AddressModule } from "./modules/address/address.module.ts";
 import { AuditLogModule } from "./modules/audit-log/audit-log.module.ts";
@@ -29,53 +32,89 @@ export const MODULES: ModuleDefinition[] = [
   { name: "audit-log", module: AuditLogModule },
 ];
 
-const env = process.env;
+const BASE_NAME = parseText(process.env.BASE_NAME, 'CORE');
+const bootstrapConfig = buildDefaultConfig();
+bootstrapConfig.baseName = BASE_NAME;
+setAppConfig(bootstrapConfig);
 
-const SERVICE_NAME = parseText(env.CORE_SERVICE_NAME, "example-service");
+const environment = {
+  baseName: env('BASE_NAME') || 'CORE',
+  serviceName: env('SERVICE_NAME') || 'poc-shared-lib-pg',
+  dbUrl:
+    env('DB_URL') ||
+    // 'postgresql://app_user:QdpwJyvVKE7mUBlbwWVhwktP@a660b108d0370487f8417aba1d011806-1681852654.ca-central-1.elb.amazonaws.com:25432/test',
+    'postgresql://postgres:zyeoTHyJtYeXQpDJYtylRMIO@shared-lib-pg-raw-bank.sage.cloud.layerbase.dev:5432/shared_lib_pg?sslmode=require&options="-c search_path=core"',
+  dbPoolSize: env('DB_POOL_SIZE') || '5',
+  dbIdleTimeoutMs: env('DB_IDLE_TIMEOUT_MS'),
+  dbConnectTimeoutMs: env('DB_CONNECT_TIMEOUT_MS'),
+  dbTenantEvents: env('DB_TENANT_EVENTS'),
+  jwtSecret: env('API_JWT_SECRET'),
+  jwtKey: env('API_JWT_KEY'),
+  jwtExpiresIn: env('API_JWT_EXPIRES_IN'),
+  jwtMaxExpiresIn: env('API_JWT_MAX_EXPIRES_IN'),
+  logLevel: env('LOG_LEVEL'),
+  logResponse: env('LOG_RESPONSE'),
+  logMaskKeys: env('LOG_MASK_KEYS'),
+  kafkaBrokers: env('KAFKA_BROKERS'),
+  kafkaClientId: env('KAFKA_CLIENT_ID'),
+  kafkaSsl: env('KAFKA_SSL'),
+  kafkaUsername: env('KAFKA_USERNAME'),
+  kafkaPassword: env('KAFKA_PASSWORD'),
+  kafkaSaslMechanism: env('KAFKA_SASL_MECHANISM'),
+  kafkaLogSend: env('KAFKA_LOG_SEND'),
+  kafkaLogTopic: env('KAFKA_LOG_TOPIC'),
+  kafkaLogFlushMs: env('KAFKA_LOG_FLUSH_MS'),
+  kafkaLogBatchSize: env('KAFKA_LOG_BATCH_SIZE'),
+  kafkaLogQueueMax: env('KAFKA_LOG_QUEUE_MAX'),
+  apiBaseUrl: env('API_BASE_URL'),
+  modulesDisabled: env('MODULES_DISABLED'),
+};
+
+const SERVICE_NAME = parseText(environment.serviceName, 'poc-shared-lib-pg');
 
 export const appConfig: AppConfig = {
-  baseName: parseText(env.BASE_NAME, "CORE"),
+  baseName: BASE_NAME,
   serviceName: SERVICE_NAME,
   version: examplePackage.version,
   server: {
-    port: parseNumber(env.PORT, 4000),
-    hostname: parseText(env.CORE_HOSTNAME, "0.0.0.0"),
+    port: parseNumber(process.env.PORT, 4000),
+    hostname: '0.0.0.0',
     isSignalHandled: true,
   },
   db: {
-    url: parseText(env.CORE_DB_URL, ""),
-    poolSize: parseNumber(env.CORE_DB_POOL_SIZE, 10),
-    idleTimeoutMs: parseNumber(env.CORE_DB_IDLE_TIMEOUT_MS, 20_000),
-    connectTimeoutMs: parseNumber(env.CORE_DB_CONNECT_TIMEOUT_MS, 10_000),
-    isTenantEventsEnabled: parseBoolean(env.CORE_DB_TENANT_EVENTS, true),
+    url: parseText(environment.dbUrl, ''),
+    poolSize: parseNumber(environment.dbPoolSize, 10),
+    idleTimeoutMs: parseNumber(environment.dbIdleTimeoutMs, 20_000),
+    connectTimeoutMs: parseNumber(environment.dbConnectTimeoutMs, 60_000),
+    isTenantEventsEnabled: parseBoolean(environment.dbTenantEvents, true),
   },
   jwt: {
-    secret: parseText(env.CORE_API_JWT_SECRET, ""),
-    key: parseText(env.CORE_API_JWT_KEY, "API_JWT_KEY"),
-    expiresIn: parseNumber(env.CORE_API_JWT_EXPIRES_IN, 900),
-    maxExpiresIn: parseNumber(env.CORE_API_JWT_MAX_EXPIRES_IN, 36_000),
+    secret: parseText(environment.jwtSecret, ''),
+    key: parseText(environment.jwtKey, 'API_JWT_KEY'),
+    expiresIn: parseNumber(environment.jwtExpiresIn, 900),
+    maxExpiresIn: parseNumber(environment.jwtMaxExpiresIn, 36_000),
   },
   log: {
-    level: parseLogLevel(env.CORE_LOG_LEVEL, "info"),
-    isResponseLogged: parseBoolean(env.CORE_LOG_RESPONSE, false),
-    maskKeys: parseList(env.CORE_LOG_MASK_KEYS, DEFAULT_MASK_KEYS),
+    level: parseLogLevel(environment.logLevel, 'info'),
+    isResponseLogged: parseBoolean(environment.logResponse, false),
+    maskKeys: parseList(environment.logMaskKeys, DEFAULT_MASK_KEYS),
   },
   kafka: {
-    brokers: parseList(env.CORE_KAFKA_BROKERS, ["localhost:9092"]),
-    clientId: parseText(env.CORE_KAFKA_CLIENT_ID, SERVICE_NAME),
-    isSsl: parseBoolean(env.CORE_KAFKA_SSL, false),
-    sasl: parseKafkaSasl(env.CORE_KAFKA_USERNAME, env.CORE_KAFKA_PASSWORD, env.CORE_KAFKA_SASL_MECHANISM),
+    brokers: parseList(environment.kafkaBrokers, ['localhost:9092']),
+    clientId: parseText(environment.kafkaClientId, SERVICE_NAME),
+    isSsl: parseBoolean(environment.kafkaSsl, false),
+    sasl: parseKafkaSasl(environment.kafkaUsername, environment.kafkaPassword, environment.kafkaSaslMechanism),
     log: {
-      isEnabled: parseBoolean(env.CORE_KAFKA_LOG_SEND, false),
-      topic: parseText(env.CORE_KAFKA_LOG_TOPIC, "app-logs"),
-      flushMs: parseNumber(env.CORE_KAFKA_LOG_FLUSH_MS, 500),
-      batchSize: parseNumber(env.CORE_KAFKA_LOG_BATCH_SIZE, 200),
-      queueMax: parseNumber(env.CORE_KAFKA_LOG_QUEUE_MAX, 10_000),
+      isEnabled: parseBoolean(environment.kafkaLogSend, false),
+      topic: parseText(environment.kafkaLogTopic, 'app-logs'),
+      flushMs: parseNumber(environment.kafkaLogFlushMs, 500),
+      batchSize: parseNumber(environment.kafkaLogBatchSize, 200),
+      queueMax: parseNumber(environment.kafkaLogQueueMax, 10_000),
     },
   },
   http: {
-    apiBaseUrl: parseText(env.CORE_API_BASE_URL, ""),
+    apiBaseUrl: parseText(environment.apiBaseUrl, ''),
   },
   modules: MODULES,
-  disabledModules: parseList(env.CORE_MODULES_DISABLED, []),
+  disabledModules: parseList(environment.modulesDisabled, []),
 };

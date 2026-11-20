@@ -3,7 +3,7 @@
 // RecordService with THEIR transaction, so a change and its audit entry are saved together or not at all.
 // Who, request id and branch come from the request context; AuditLogMapper builds the row and the views.
 
-import { readBranchId, readRequestId, readSessionUser, type ITransaction, type SearchPage } from "shared-bun-elysia";
+import { branch_id, request_id, session_user, type ITransaction, type SearchPage } from "shared-bun-elysia";
 import type { AuditAction, AuditLogSearchDto, AuditLogView } from "./audit-log.dto.ts";
 import { AuditLogMapper } from "./audit-log.mapper.ts";
 import type { AuditLogRepository } from "./audit-log.repository.ts";
@@ -23,14 +23,14 @@ export class AuditLogService {
     data: unknown,
     transaction?: ITransaction,
   ): Promise<AuditLogView> {
-    const sessionUser = readSessionUser();
+    const sessionUser = session_user();
     const entry = AuditLogMapper.ToEntry({
       entity,
       entityId,
       action,
       data,
-      requestId: readRequestId(),
-      branchId: readBranchId(),
+      requestId: request_id(),
+      branchId: branch_id(),
       userId: sessionUser.id,
     });
     const row = await this.repository.Create(entry, transaction);

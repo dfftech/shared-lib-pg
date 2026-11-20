@@ -5,9 +5,8 @@
 //   GET  /address-entity/:id   EntityByIdAddress
 // Handlers stay thin: no try / catch (appPlugin turns AppError and other errors into replies).
 
-import type { ResponseType } from "dff-util";
 import type { Elysia } from "elysia";
-import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY } from "shared-bun-elysia";
+import { LISTED_SUCCESSFULLY, SAVED_SUCCESSFULLY, type ResponseType } from "shared-bun-elysia";
 import { AddressDto, type AddressIdParams, type AddressSaveDto, type AddressSearchDto } from "./address.dto.ts";
 import type { AddressService } from "./address.service.ts";
 

@@ -1,7 +1,8 @@
 # shared-bun-elysia example
 
-An object oriented multi-tenant service built on `shared-bun-elysia`, the shape of every service: `config.ts` (the
-only env read: one `AppConfig` straight from `process.env`) lists the modules, `main.ts` runs `new Application(appConfig).start()`, and each module builds
+An object oriented multi-tenant service built on `shared-bun-elysia`, the shape of every service: `config.ts` (which
+uses `env()` to read `BASE_NAME`-prefixed settings) builds one `AppConfig` and lists the modules, `main.ts` runs
+`new Application(appConfig).start()`, and each module builds
 `Repository(database)` → `Service(repository)` → `Controller(service)` in its constructor. One database per tenant
 (schemas of one PostgreSQL here), Kafka logs keyed by tenant; a user / address save writes its audit entry in the same
 transaction. It imports the library source (`../src`) through `tsconfig.json` paths and uses the packages of the
@@ -9,7 +10,7 @@ library root, so install once at the root.
 
 ```
 src/
-├── config.ts                       appConfig: AppConfig from process.env + MODULES (health, user, address, audit-log)
+├── config.ts                       appConfig: AppConfig from env() + MODULES (health, user, address, audit-log)
 ├── main.ts                         new Application(appConfig).start()
 ├── log-tail.ts                     prints the Kafka logs: [tenant] LEVEL message
 └── modules/
@@ -29,6 +30,9 @@ sql/0000-core.sql                   registry core.tenants (acme, globex) + core 
 sql/0001-tenant.sql                 tenant_acme / tenant_globex schemas: users, addresses, audit_logs
 docs/rest/*.rest                    requests for the REST Client
 ```
+
+`BASE_NAME=CORE` makes `env("DB_URL")` read `CORE_DB_URL`. Example services use the request helpers
+`logger()`, `session_user()`, `request_id()`, `branch_id()`, and `tenant_id()` instead of reading request internals.
 
 ## Run
 
