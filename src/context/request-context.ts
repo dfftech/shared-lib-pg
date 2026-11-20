@@ -9,6 +9,7 @@ import type { SessionInfo } from "../app-types.ts";
 import type { AppDatabase } from "../db/db-types.ts";
 import { ContextLogger, appLogger } from "../logging/app-logger.ts";
 import type { AppLogger, LogContext, LogContextReader } from "../logging/log-types.ts";
+import { readTenantMode } from "./tenant-mode.ts";
 
 /** Session user id when the request has no (readable) token. */
 export const UNKNOWN_USER_ID = "unknown";
@@ -90,7 +91,7 @@ export class RequestContext implements LogContextReader {
     if (this.traceId !== undefined) {
       context.trace_id = this.traceId;
     }
-    if (this.tenantId !== undefined) {
+    if (this.tenantId !== undefined && readTenantMode()) {
       context.tenant_id = this.tenantId;
     }
     if (this.branchId !== undefined) {

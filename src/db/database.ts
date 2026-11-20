@@ -14,6 +14,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import type { Pool } from "pg";
 import type { DbConfig } from "../config/app-config.ts";
 import { readSessionDb } from "../context/request-context.ts";
+import { setTenantMode } from "../context/tenant-mode.ts";
 import { runWithTenant, type TenantTaskOptions } from "../context/tenant-task.ts";
 import { appLogger } from "../logging/app-logger.ts";
 import { createTenantPlugin, type TenantPluginOptions } from "../plugins/tenant-plugin.ts";
@@ -91,6 +92,7 @@ export class Database {
     }
     await this.pingCore();
     this.isTenantMode = await this.detectMultiTenant();
+    setTenantMode(this.isTenantMode);
     const architecture = this.isTenantMode ? "multi_tenant" : "single_tenant";
     appLogger.info("db: architecture detected", { architecture, schema: this.schema });
     if (!this.isTenantMode) {
