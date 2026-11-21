@@ -1,9 +1,10 @@
 # Coding rules for shared-lib-pg
 
 The same rules as `shared-lib-web`, so the code is easy to read for **people and AI tools**.
-`bun run check:style` checks rules 1–3 and 10 (file names) in `src/` and `example/src/` and fails the build when one is broken.
+`bun run check:style` checks rules 1–3 and 11 (file names) in `src/` and `example/src/` and fails the build when one is broken.
+The [DFF code style skill](./.agent/skills/dff-code-style-skill.md) contains the same rules for coding agents.
 
-## 1. No nested functions
+## 1. NO NESTED FUNCTIONS
 
 Write every function at the top level of the file or as a class method. No arrow function inside a function,
 method, handler or service.
@@ -22,7 +23,8 @@ async SaveUser(context: { body: UserSaveDto }): Promise<ResponseType> {
 
 register(app: Elysia): void {
   const saveUser = this.SaveUser.bind(this);
-  app.post("/user-save", { body: UserDto.SaveSchema }, saveUser);
+  const saveOptions = { body: UserDto.SaveSchema };
+  app.post("/user-save", saveOptions, saveUser);
 }
 ```
 
@@ -35,24 +37,43 @@ register(app: Elysia): void {
 | Background work for a tenant | `database.runWithTenant("acme", syncOrders, ids)` |
 | `.catch(...)` | `promise.catch(handleLoadError)` |
 
-## 2. No call inside a call
+## 2. NO CALL OR INLINE OBJECT ARGUMENT
 
 ```ts
 // ❌ Bad
-const rows = await db.select().from(addressEntity).where(eq(addressEntity.id, id));
-logger.info(JSON.stringify(entry));
+saveUser(await loadUser(id));
+const service = new UserService(new UserRepository(database));
+register({ path: "/users" });
+saveUser({ id: randomUUID(), name });
 
 // ✅ Good
+const user = await loadUser(id);
+saveUser(user);
+const repository = new UserRepository(database);
+const service = new UserService(repository);
+const options = { path: "/users" };
+register(options);
+const id = randomUUID();
+const values = { id, name };
+saveUser(values);
+
 const idMatch = eq(addressEntity.id, id);
 const rows = await db.select().from(addressEntity).where(idMatch);
 const line = JSON.stringify(entry);
 logger.info(line);
 ```
 
-Calls inside object literals are allowed (`{ id: randomUUID() }`), but prefer a named const for anything non-trivial.
+Do not pass a function call, `new` expression, or object literal directly as an argument. Store it in a named `const`
+first and pass the variable; do not put calls inside argument object literals either.
 **Backend exception:** schema builders may nest: `t.Optional(t.String())`.
 
-## 3. No chained calls
+## 3. AVOID CALLBACK HELL
+
+Do not nest callbacks or write deeply nested promise chains. Extract callbacks into named top-level functions or
+class methods, then prefer `async` / `await` with intermediate variables. The no-nested-functions rule applies to
+event handlers, routes, timers, promise handlers and collection callbacks.
+
+## 4. NO CHAINED CALLS
 
 ```ts
 // ❌ Bad
@@ -71,12 +92,12 @@ const code = rawCode.toLowerCase();
 
 The allowed method names are the `BUILDER_METHODS` list in `scripts/check-code-style.mjs`.
 
-## 4. Lists with `for ... of`
+## 5. LISTS WITH `for ... of`
 
 Build lists with `for ... of` and `push`, not `.map()` / `.filter()` with an inline arrow.
 `toViewMapper(rows)` maps a whole list already.
 
-## 5. Object oriented modules
+## 6. OBJECT-ORIENTED MODULES
 
 A service is an `Application` built from one config; each feature is a module class. Module and file names are
 **singular** (`user`, not `users`).
@@ -94,8 +115,8 @@ modules/{module}/
 
 - Dependencies go in through constructors, exactly in this chain (the module is the only place that uses `new` for
   them): `new XRepository(database)` → `new XService(repository)` → `new XController(service)`.
-- `XModule.register(app)` makes the module's own `new Elysia({ name: "x-routes" })`, adds its plugins
-  (`this.database.tenantPlugin()`), lets the controller register its routes on it, then `app.use(routes)`.
+- `XModule.register(app)` makes the module's own Elysia instance, adds its plugins, lets the controller register
+  its routes on it, then `app.use(routes)`.
 - The module is listed once in the app's `config.ts` (`{ name: "x", module: XModule }`); `Application` creates it with
   `new XModule(database)` and registers it. Nothing else imports a module.
 - A service calls its own repository / mapper and the **services** of other modules (built in the module constructor),
@@ -107,18 +128,18 @@ modules/{module}/
   methods (`SaveUser`, `SearchUsers`, `EntityByIdUser`), thin, no try / catch. `ResponseType` only in controllers.
 - Entities never change the database (no drizzle-kit push / migrate). Tables come from SQL migrations.
 
-## 5b. Import paths with extensions
+## 6b. IMPORT PATHS WITH EXTENSIONS
 
 Relative imports use the real file name: `import { AddressService } from "./address.service.ts";`.
 `tsc` rewrites them to `.js` when it builds `dist/`.
 
-## 6. Use dff-util and this library first
+## 7. USE `dff-util` AND THIS LIBRARY FIRST
 
 Before writing a constant, type or helper, use `dff-util` (`ResponseType`, `SessionInfo`, `SearchType`, `ConstKeys`,
 `RegExp.EMAIL`, `QueryCond` ...) and this library (`DrizzleRepository`, `buildSearchWhere`, `buildAuditColumns`,
 `readText`, `AppError`, `SAVED_SUCCESSFULLY` ...).
 
-## 7. Config, never env; request context, never module state
+## 8. CONFIG, NEVER ENV; REQUEST CONTEXT, NEVER MODULE STATE
 
 - Environment variables are read **only** in the app's `config.ts`, directly from `process.env`, into one
   `AppConfig` object (`parseNumber(process.env.CORE_DB_POOL_SIZE, 10)` ...). Library classes and modules read
@@ -127,22 +148,22 @@ Before writing a constant, type or helper, use `dff-util` (`ResponseType`, `Sess
   handler context. Never keep them in fields or module variables: requests run at the same time. Class fields hold
   only dependencies (repository, service, database) set in the constructor.
 
-## 8. Named exports only
+## 9. NAMED EXPORTS ONLY
 
 `export class X`, `export function X` and `import { X }`. No default exports (config files of tools excepted).
 
-## 9. Clear names and comments
+## 10. CLEAR NAMES AND COMMENTS
 
 Every file starts with a short comment saying what it does. Every exported function has a `/** ... */` line.
 Booleans start with `is`, `has`, `can` or `show`.
 
-## 10. File names: lowercase with "-"
+## 11. FILE NAMES: LOWERCASE WITH "-"
 
 Every file and folder name is lowercase words joined with `-`. A `.` separates a role suffix:
 `app-plugin.ts`, `request-context.ts`, `user.controller.ts`, `user.module.ts`, `kafka-log-queue.test.ts`, `0000-core.sql`.
 Not allowed: `AppPlugin.ts`, `requestContext.ts`, `address_service.ts`.
 
-## 11. Tests
+## 12. TESTS
 
 Tests live in `tests/` and run on Bun's test runner (`bun test`) with the test config (`tests/test-config.ts`, no env).
 Import `describe`, `it`, `expect` from `bun:test`.

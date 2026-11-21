@@ -2,9 +2,9 @@
 name: dff-code-style
 description: >
   Readability rules for every DesignForFeature TypeScript backend file (Bun + Elysia):
-  no nested functions, no function call passed into another call, no chained calls
-  (except Elysia / Drizzle builder chains), for...of loops, named exports.
-  Enforced by scripts/check-code-style.mjs.
+  no nested functions, no calls or inline objects passed into another call, no chained calls
+  (except Elysia / Drizzle builder chains), avoid callback hell, for...of loops, named exports.
+  Run scripts/check-code-style.mjs for the automated source checks; use this skill for the full guidance.
 ---
 
 # DFF code style — easy for people and AI to read
@@ -18,28 +18,39 @@ functions, handlers or service methods.
 
 | Instead of | Write |
 | --- | --- |
-| `app.post("/x-save", async ({ body }) => ...)` | controller method `async SaveX(context: { body: XSaveDto })` + in `register`: `const saveX = this.SaveX.bind(this); app.post("/x-save", { body: XDto.SaveSchema }, saveX)` |
-| `pool.on("error", (error) => log(label, error))` | top-level `handlePoolError(label, error)` + `pool.on("error", handlePoolError.bind(null, label))` |
+| `app.post("/x-save", async ({ body }) => ...)` | controller method `async SaveX(context: { body: XSaveDto })` + in `register`: bind the method, assign route options to a `const`, then call `app.post(path, options, handler)` |
+| `pool.on("error", (error) => log(label, error))` | top-level `handlePoolError(label, error)`, bind it to a `const`, then pass that variable to `pool.on` |
 | `db.transaction(async (tx) => ...)` | `const transaction = await this.repository.Begin()` + try / `commit()` / catch `rollback()` |
 | `rows.map((row) => toView(row))` | `toViewMapper(rows)`, or `for (const row of rows) { ... push }` |
 | `new Promise((resolve) => setTimeout(resolve, 300))` | `await Bun.sleep(300)` |
 | `.catch((error) => ...)` | `promise.catch(handleLoadError)` |
 
-## Rule 2 — NO_CALL_INSIDE_CALL
+## Rule 2 — NO_CALL_OR_INLINE_OBJECT
 
 ```ts
 // WRONG
 abcd(xyz());
 saveUser(await loadUser(id));
+const service = new UserService(new UserRepository(database));
+register({ path: "/users" });
+saveUser({ id: createId(), name });
 
 // RIGHT
-const mnt = xyz();
-abcd(mnt);
+const value = xyz();
+abcd(value);
 const user = await loadUser(id);
 saveUser(user);
+const repository = new UserRepository(database);
+const service = new UserService(repository);
+const options = { path: "/users" };
+register(options);
+const id = createId();
+const userValues = { id, name };
+saveUser(userValues);
 ```
 
-Calls inside object literals are allowed (`{ id: randomUUID() }`), but prefer a named const for anything non-trivial.
+Do not pass a function call, `new` expression, or inline object literal directly as an argument. Assign it to a
+named `const` first and pass that variable; do not put calls inside argument object literals either.
 Exception: schema builders nest, `t.Optional(t.String())`. Drizzle conditions go in consts:
 `const idMatch = eq(userEntity.id, id); ... .where(idMatch)`.
 
@@ -56,7 +67,12 @@ const code = rawCode.toLowerCase();
 Exception: builder chains of Elysia (`new Elysia().use(x).post(...)`) and Drizzle
 (`db.select().from(t).where(w).limit(1)`, `text("id").primaryKey()`): see `BUILDER_METHODS` in the checker.
 
-## Rule 4 — FILE_NAMING
+## Rule 4 — NO_CALLBACK_HELL
+
+Do not nest callbacks or create deeply nested `.then()` / `.catch()` chains. Extract callbacks into named
+top-level functions or class methods; prefer `async` / `await` and intermediate variables.
+
+## Rule 5 — FILE_NAMING
 
 File and folder names: lowercase words joined with `-`, `.` for a role suffix.
 `app-plugin.ts`, `request-context.ts`, `user.api.ts`, `user.service.ts`, `kafka-log-queue.test.ts`, `0000-core.sql`.
