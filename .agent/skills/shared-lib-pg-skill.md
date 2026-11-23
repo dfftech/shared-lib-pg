@@ -50,11 +50,28 @@ sql/              migrations (tables are never created from Drizzle entities)
   consumers with `application.kafka.startConsumer({ topic, groupId, onMessage })`.
 - Other services: `AppHttp.Get / Post / Put / Delete` (passes token, request-id, tenant, branch).
 - Reply status texts: `SAVED_SUCCESSFULLY`, `LISTED_SUCCESSFULLY`, `LOADED_SUCCESSFULLY`, `DELETED_SUCCESSFULLY`.
-- Mappers: `toEntityMapper` and `toViewMapper` are exported by `shared-lib-pg` (do not import `dff-util` for them, do not
+- Mappers: `toEntityMapper` and `toViewMapper` are exported by `shared-lib-pg` (import them from `shared-lib-pg` or `dff-util`; do not
   write own key converters). `toEntityMapper(values)` turns camelCase values into snake_case entity columns
   (`zipCode` -> `zip_code`); `toViewMapper(entityOrRows)` turns DB columns into camelCase view keys and maps a whole list in
   one call (no `.map()`). Both return loose records: cast the result to the module's own type, then fix the few fields
   that differ (renamed columns, `Date` -> ISO string). Use them inside the static `{Module}Mapper` only.
+
+## Reuse first: `dff-util` and `shared-lib-pg`
+
+Use the two packages as much as possible. Before writing any helper, constant, converter or parser, look in
+`shared-lib-pg` and `dff-util` (their `index.d.ts`) and import it. Write an own utility only when neither has it, and
+say so in a comment.
+
+- `shared-lib-pg`: `Application`, `env`, `parseText / parseNumber / parseBoolean / parseList`, `readText`,
+  `readOptionalText`, `readOptionalNumber`, `readErrorText`, request helpers (`readLogger`, `readSessionUser`,
+  `readRequestId`, `readTenantId`, `readBranchId`), `buildAuditColumns`, `DrizzleRepository`, `SearchPage` and the
+  search helpers, `AppError`, `ResponseType`, `authPlugin`, `AppHttp`, `toEntityMapper`, `toViewMapper`.
+- `dff-util`: case converters (`toCamelCase`, `toSnakeCase`, `toKebabCase`, `toPascalCase`, `toSchemaMapper`), ids and
+  codes (`AppUUID4`, `AppCode`, `AppRandomString`), dates (`AppAddDays`, `AppDaysBack`, `DateAndTime`, `TimeAgo`,
+  `DateTime24HrFormat`), `EncodeBase64 / DecodeBase64 / EncodeURL / DecodeURL`, `ConstKeys`, `ConstMessages`, `RegExp`
+  patterns (`RegExp.EMAIL`), `Http`, `QueryCond`, `JwtEncode / JwtDecode / JwtVerify / JwtValid`, `CsvToJson /
+  JsonToCsv`.
+- Add `dff-util` and `shared-lib-pg` to the service's `package.json`; never copy their code into the service.
 
 ## Elysia 2.0
 
