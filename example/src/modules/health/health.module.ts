@@ -20,9 +20,11 @@ export class HealthModule implements IModule {
 
   /** /health on its own instance, /health/:id on one with the tenant plugin. */
   register(app: AnyElysia): void {
+
     const routes = new Elysia({ name: "health-routes" });
     this.controller.register(routes);
     app.use(routes);
+
     const tenantRoutes = new Elysia({ name: "health-tenant-routes" });
     const tenantDb = this.database.tenantPlugin({ tenantParam: "id" });
     tenantRoutes.use(tenantDb);
