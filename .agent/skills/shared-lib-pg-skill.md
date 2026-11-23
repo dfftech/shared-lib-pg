@@ -50,6 +50,11 @@ sql/              migrations (tables are never created from Drizzle entities)
   consumers with `application.kafka.startConsumer({ topic, groupId, onMessage })`.
 - Other services: `AppHttp.Get / Post / Put / Delete` (passes token, request-id, tenant, branch).
 - Reply status texts: `SAVED_SUCCESSFULLY`, `LISTED_SUCCESSFULLY`, `LOADED_SUCCESSFULLY`, `DELETED_SUCCESSFULLY`.
+- Mappers: `toEntityMapper` and `toViewMapper` are exported by `shared-lib-pg` (do not import `dff-util` for them, do not
+  write own key converters). `toEntityMapper(values)` turns camelCase values into snake_case entity columns
+  (`zipCode` -> `zip_code`); `toViewMapper(entityOrRows)` turns DB columns into camelCase view keys and maps a whole list in
+  one call (no `.map()`). Both return loose records: cast the result to the module's own type, then fix the few fields
+  that differ (renamed columns, `Date` -> ISO string). Use them inside the static `{Module}Mapper` only.
 
 ## Elysia 2.0
 

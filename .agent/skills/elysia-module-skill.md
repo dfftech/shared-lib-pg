@@ -175,11 +175,12 @@ export type UserValues = Omit<UserEntity, keyof AuditColumns>;
 export class UserMapper {
   static FromDto(dto: UserSaveDto): UserValues { ... }                   // readText / readOptionalText, new id when none
   static ToEntity(values: UserValues, existing: UserEntity | undefined, userId: string): UserEntity {
+    const mappedValues = toEntityMapper(values) as UserValues;   // camelCase -> snake_case columns (from shared-lib-pg)
     const auditColumns = buildAuditColumns(existing, userId);
-    return { ...values, ...auditColumns };
+    return { ...mappedValues, ...auditColumns };
   }
-  static ToView(entity: UserEntity): UserView { ... }                    // field by field, snake_case -> camelCase, ISO dates
-  static ToViewList(entities: UserEntity[]): UserView[] { ... }
+  static ToView(entity: UserEntity): UserView { ... }                    // toViewMapper(entity) (snake_case -> camelCase), then ISO dates
+  static ToViewList(entities: UserEntity[]): UserView[] { ... }          // toViewMapper(entities) maps the whole list
   static ToViewPage(page: SearchPage<UserEntity>): SearchPage<UserView> { ... }
 }
 ```
