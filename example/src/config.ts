@@ -19,6 +19,7 @@ import {
   type AppConfig,
   type ModuleDefinition,
 } from 'shared-lib-pg';
+import { toKebabCase } from "dff-util";
 import examplePackage from "../package.json" with { type: "json" };
 import { AddressModule } from "./modules/address/address.module.ts";
 import { AuditLogModule } from "./modules/audit-log/audit-log.module.ts";
@@ -38,6 +39,7 @@ bootstrapConfig.baseName = BASE_NAME;
 setAppConfig(bootstrapConfig);
 
 const environment = {
+  apiBaseUrl: env('API_BASE_URL'),
   baseName: env('BASE_NAME') || 'CORE',
   serviceName: env('SERVICE_NAME') || 'poc-shared-lib-pg',
   dbUrl:
@@ -65,7 +67,6 @@ const environment = {
   kafkaLogFlushMs: env('KAFKA_LOG_FLUSH_MS'),
   kafkaLogBatchSize: env('KAFKA_LOG_BATCH_SIZE'),
   kafkaLogQueueMax: env('KAFKA_LOG_QUEUE_MAX'),
-  apiBaseUrl: env('API_BASE_URL'),
   modulesDisabled: env('MODULES_DISABLED'),
 };
 
@@ -116,4 +117,18 @@ export const appConfig: AppConfig = {
   },
   modules: MODULES,
   disabledModules: parseList(environment.modulesDisabled, []),
+};
+
+/** Base URL + prefix of the other services: <API_BASE_URL>/<base-name>-<service>. */
+const MS_BASE_URL = parseText(environment.apiBaseUrl, '');
+const MS_PREFIX = toKebabCase(BASE_NAME);
+
+/** Service URLs: BASE_NAME-prefixed MS_<NAME>_URL (e.g. CORE_MS_SOR_URL), else MS_BASE_URL/<base-name>-<service>. */
+export const MS_URLS = {
+  api: env('MS_API_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-api',
+  events: env('MS_EVENTS_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-events',
+  main: env('MS_MAIN_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-main',
+  sor: env('MS_SOR_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-sor',
+  tms: env('MS_TMS_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-tms',
+  util: env('MS_UTIL_URL') || MS_BASE_URL + '/' + MS_PREFIX + '-util',
 };
